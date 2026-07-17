@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/sms_channel.dart';
 import '../models/sms_message.dart';
@@ -9,6 +10,8 @@ class ChatScreenProvider with ChangeNotifier {
   final String address;
   final AppState
   globalAppState; // Reference handle to manipulate global inbox items instantly
+
+  StreamSubscription<Map<String, dynamic>>? _smsSubscription;
 
   List<SmsMessage> _messages = [];
   bool _isLoadingMessages = false;
@@ -25,6 +28,11 @@ class ChatScreenProvider with ChangeNotifier {
   }) {
     // Automatically query historical content providers the instant the chat screen loads
     fetchMessages();
+    _smsSubscription = globalAppState.incomingSmsStream.listen((incomingData) {
+      final String incomingAddress = incomingData['address']?.toString() ?? '';
+      final String body = incomingData['body']?.toString() ?? '';
+      appendIncomingLiveMessageIfMatch(incomingAddress, body);
+    });
   }
 
   /// Screen Specific: Queries all text bubbles belonging to this specific [threadId]
@@ -92,5 +100,11 @@ class ChatScreenProvider with ChangeNotifier {
       );
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _smsSubscription?.cancel();
+    super.dispose();
   }
 }

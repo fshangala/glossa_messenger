@@ -155,6 +155,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             Expanded(
               child: TextField(
                 controller: _textController,
+                enabled: !chatProvider.isSending,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
                   hintText: 'Text message',

@@ -1,9 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/sms_channel.dart';
 import '../models/conversation_thread.dart';
 
 class AppState with ChangeNotifier {
   final SmsChannelService _smsChannel = SmsChannelService();
+  final StreamController<Map<String, dynamic>> _incomingSmsController =
+      StreamController<Map<String, dynamic>>.broadcast();
+
+  Stream<Map<String, dynamic>> get incomingSmsStream =>
+      _incomingSmsController.stream;
 
   List<ConversationThread> _threads = [];
   bool _isFetchingThreads = false;
@@ -45,9 +51,11 @@ class AppState with ChangeNotifier {
       );
     } else {
       fetchConversations();
+      _incomingSmsController.add(incomingData);
       return;
     }
     notifyListeners();
+    _incomingSmsController.add(incomingData);
   }
 
   /// Optimistically updates a thread's preview snippet text when a user sends a text message
@@ -59,5 +67,11 @@ class AppState with ChangeNotifier {
       _threads.insert(0, currentThread.copyWith(newSnippet: body));
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _incomingSmsController.close();
+    super.dispose();
   }
 }
