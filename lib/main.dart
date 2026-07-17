@@ -1,122 +1,154 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
-void main() {
-  runApp(const MyApp());
+// Import our internal application services and architecture blocks
+import 'services/sms_channel.dart';
+import 'services/notification_service.dart';
+import 'providers/app_state.dart';
+import 'screens/chat_list_screen.dart';
+
+void main() async {
+  // 1. Ensure engine frames are fully initialized before calling native channels
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 2. Trigger critical runtime notification allowance pop-ups for Android 13+
+  await NotificationService.initNotificationPermissions();
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppState()),
+      ],
+      child: const GlossaMessengerApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class GlossaMessengerApp extends StatefulWidget {
+  const GlossaMessengerApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+  State<GlossaMessengerApp> createState() => _GlossaMessengerAppState();
+}
+
+class _GlossaMessengerAppState extends State<GlossaMessengerApp> {
+  final SmsChannelService _smsChannel = SmsChannelService();
+  bool _isDefaultApp = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSystemRequirements();
+    _setupIncomingMessageListener();
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  /// Verifies telephony privileges and checks if we are the system default SMS app
+  Future<void> _checkSystemRequirements() async {
+    // A. Request explicit runtime permission to read and transmit carrier SMS texts
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.sms,
+    ].request();
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+    if (statuses[Permission.sms]?.isGranted ?? false) {
+      // B. Query Kotlin to see if we are currently selected as the system's primary SMS handler
+      final isDefault = await _smsChannel.isDefaultSmsApp();
+      if (!mounted) return;
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+      setState(() {
+        _isDefaultApp = isDefault;
+        _isLoading = false;
+      });
 
-  final String title;
+      // If already default, fetch conversation history from the database immediately
+      if (isDefault) {
+        context.read<AppState>().fetchConversations();
+      }
+    } else {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  /// Establishes the real-time MethodChannel hook to catch live texts forwarded from SmsReceiver.kt
+  void _setupIncomingMessageListener() {
+    const MethodChannel('com.fshangala.apps.glossa_messenger/sms')
+        .setMethodCallHandler((MethodCall call) async {
+      if (call.method == 'onMessageReceived') {
+        final dynamic rawData = call.arguments;
+        if (rawData is Map) {
+          final mapData = Map<String, dynamic>.from(rawData);
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+          // Inject the incoming text straight into our active global state array
+          if (mounted) {
+            context.read<AppState>().handleIncomingLiveSms(mapData);
+          }
+        }
+      }
     });
   }
 
+  /// Launches the native Android OS default app picker modal sheet
+  Future<void> _requestDefaultStatus() async {
+    final success = await _smsChannel.requestDefaultSmsApp();
+    if (success) {
+      // Re-evaluate system requirements to see if the user accepted or skipped the setup
+      await _checkSystemRequirements();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return MaterialApp(
+      title: 'Glossa Messenger',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1E3A8A), // Deep executive sapphire blue
+          brightness: Brightness.light,
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      home: _isLoading
+          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          : _isDefaultApp
+              ? const ChatListScreen()
+              : Scaffold(
+                  body: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.forum_outlined, size: 80, color: Color(0xFF1E3A8A)),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Glossa Messenger',
+                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'To query conversation history, catch real-time texts, and reply directly over carrier lines, this app must be set as your active default messaging handler.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 15, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton.icon(
+                          onPressed: _requestDefaultStatus,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E3A8A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          ),
+                          icon: const Icon(Icons.swap_horizontal_circle_outlined),
+                          label: const Text('Set as Default SMS App', style: TextStyle(fontSize: 16)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
     );
   }
 }
