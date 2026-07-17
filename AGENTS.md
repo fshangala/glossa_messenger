@@ -85,21 +85,21 @@ This file serves as the definitive state documentation and roadmap for `glossa_m
 - [x] Add an optimistic UI pipeline inside `ChatScreenProvider` to append text components before carrier towers return network flags.
 - [x] Integrate layout `ScrollController` listeners to auto-lock list windows to the bottom when messages load.
 
-### 🟡 Phase 4: Inbound Interception & Live Screen Sync
+### 🟢 Phase 4: Inbound Interception & Live Screen Sync
 - [x] Build `SmsReceiver.kt` combining raw multi-part SMS strings arriving via standard network antennas.
 - [x] Wire `NotificationManager` in Kotlin to trigger high-priority system banners if the UI engine is closed or backgrounded.
 - [x] Bind the live background listener to `main.dart` to inject new message packets safely into the global parent memory layer.
-- [ ] **CURRENT TASK**: Wire the foreground listener loop into `ChatMessagesScreen` via the widget context tree. If the user is currently reading an active thread, incoming message feeds must pipe live into the bubble window view in real time (using `appendIncomingLiveMessageIfMatch`).
-- [ ] Lock typing controls and send action icons during raw asynchronous carrier dispatch processing windows.
+- [x] Wire the foreground listener loop into `ChatMessagesScreen` via the widget context tree. If the user is currently reading an active thread, incoming message feeds must pipe live into the bubble window view in real time (using `appendIncomingLiveMessageIfMatch`).
+- [x] Lock typing controls and send action icons during raw asynchronous carrier dispatch processing windows.
 
-### 🔴 Phase 5: Production Post-MVP Polish
-- [ ] Implement checks identifying dead SIM carrier states or network signal dropouts to deliver a graceful transmission failure UI.
+### 🟡 Phase 5: Production Post-MVP Polish
+- [ ] **CURRENT TASK**: Implement checks identifying dead SIM carrier states or network signal dropouts to deliver a graceful transmission failure UI.
 - [ ] Build a contact resolution lookup engine query channel running against Android's native addresses database (`ContactsContract`) to display actual names instead of raw numbers.
 
 ---
 
 ## 🎯 Next Steps for the Next Session
-To complete Phase 4, modify `lib/screens/chat_messages_screen.dart` to register a context listener to `AppState`. When a message lands over the air, check if the sender matches the currently viewed text thread. If true, inject it live into the `ChatScreenProvider` layout array so the conversation refreshes right before the user's eyes without them having to exit and re-enter the chat.
+To begin Phase 5, modify the cellular sending service or native MethodChannel definitions to detect carrier states, signal drops, or empty SIM states, exposing these failure flags to the UI to handle and present transmission errors gracefully.
 
 [1] [https://layer5.io](https://layer5.io/blog/ai/agentsmd-one-file-to-guide-them-all/)
 [2] [https://developer.android.com](https://developer.android.com/studio/gemini/best-practices)
