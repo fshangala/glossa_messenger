@@ -12,15 +12,13 @@ import 'screens/chat_list_screen.dart';
 void main() async {
   // 1. Ensure engine frames are fully initialized before calling native channels
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 2. Trigger critical runtime notification allowance pop-ups for Android 13+
   await NotificationService.initNotificationPermissions();
 
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AppState()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AppState())],
       child: const GlossaMessengerApp(),
     ),
   );
@@ -74,8 +72,9 @@ class _GlossaMessengerAppState extends State<GlossaMessengerApp> {
 
   /// Establishes the real-time MethodChannel hook to catch live texts forwarded from SmsReceiver.kt
   void _setupIncomingMessageListener() {
-    const MethodChannel('com.fshangala.apps.glossa_messenger/sms')
-        .setMethodCallHandler((MethodCall call) async {
+    const MethodChannel(
+      'com.fshangala.apps.glossa_messenger/sms',
+    ).setMethodCallHandler((MethodCall call) async {
       if (call.method == 'onMessageReceived') {
         final dynamic rawData = call.arguments;
         if (rawData is Map) {
@@ -114,41 +113,54 @@ class _GlossaMessengerAppState extends State<GlossaMessengerApp> {
       home: _isLoading
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : _isDefaultApp
-              ? const ChatListScreen()
-              : Scaffold(
-                  body: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.forum_outlined, size: 80, color: Color(0xFF1E3A8A)),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Glossa Messenger',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'To query conversation history, catch real-time texts, and reply directly over carrier lines, this app must be set as your active default messaging handler.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 15, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 32),
-                        ElevatedButton.icon(
-                          onPressed: _requestDefaultStatus,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E3A8A),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                          ),
-                          icon: const Icon(Icons.swap_horizontal_circle_outlined),
-                          label: const Text('Set as Default SMS App', style: TextStyle(fontSize: 16)),
-                        ),
-                      ],
+          ? const ChatListScreen()
+          : Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.forum_outlined,
+                      size: 80,
+                      color: Color(0xFF1E3A8A),
                     ),
-                  ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Glossa Messenger',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'To query conversation history, catch real-time texts, and reply directly over carrier lines, this app must be set as your active default messaging handler.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton.icon(
+                      onPressed: _requestDefaultStatus,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1E3A8A),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                      ),
+                      icon: const Icon(Icons.swap_horizontal_circle_outlined),
+                      label: const Text(
+                        'Set as Default SMS App',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }

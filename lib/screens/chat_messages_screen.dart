@@ -52,7 +52,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             children: [
               Text(
                 widget.thread.address,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 'Thread ID: ${widget.thread.threadId}',
@@ -65,9 +68,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         body: Consumer<ChatScreenProvider>(
           builder: (context, chatProvider, child) {
             // Automatically trigger scroll focus down whenever message arrays populate
-            WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _scrollToBottom(),
+            );
 
-            if (chatProvider.isLoadingMessages && chatProvider.messages.isEmpty) {
+            if (chatProvider.isLoadingMessages &&
+                chatProvider.messages.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -87,7 +93,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                           },
                         ),
                 ),
-                
+
                 // B. Interactive Dispatch Typing Dock Base Channel
                 _buildMessageInputDock(context, chatProvider),
               ],
@@ -107,7 +113,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4.0),
         padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
           color: isMe
               ? Theme.of(context).colorScheme.primary
@@ -122,7 +130,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         child: Text(
           message.body,
           style: TextStyle(
-            color: isMe ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
+            color: isMe
+                ? Colors.white
+                : Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 15,
           ),
         ),
@@ -131,7 +141,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
 
   /// UI Widget: Typing text fields bar sitting above system hardware software keyboards
-  Widget _buildMessageInputDock(BuildContext context, ChatScreenProvider chatProvider) {
+  Widget _buildMessageInputDock(
+    BuildContext context,
+    ChatScreenProvider chatProvider,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
       color: Theme.of(context).colorScheme.surface,
@@ -158,7 +171,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                       height: 24,
                       child: CircularProgressIndicator(strokeWidth: 2.0),
                     )
-                  : Icon(Icons.send, color: Theme.of(context).colorScheme.primary),
+                  : Icon(
+                      Icons.send,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
               onPressed: chatProvider.isSending
                   ? null
                   : () async {

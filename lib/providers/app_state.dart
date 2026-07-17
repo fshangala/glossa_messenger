@@ -16,8 +16,11 @@ class AppState with ChangeNotifier {
     _isFetchingThreads = true;
     notifyListeners();
 
-    final List<Map<String, dynamic>> rawConversations = await _smsChannel.getConversations();
-    _threads = rawConversations.map((map) => ConversationThread.fromMap(map)).toList();
+    final List<Map<String, dynamic>> rawConversations = await _smsChannel
+        .getConversations();
+    _threads = rawConversations
+        .map((map) => ConversationThread.fromMap(map))
+        .toList();
 
     _isFetchingThreads = false;
     notifyListeners();

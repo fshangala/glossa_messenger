@@ -25,7 +25,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Glossa Messenger', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Glossa Messenger',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
@@ -55,21 +58,34 @@ class _ChatListScreenState extends State<ChatListScreen> {
               itemCount: appState.threads.length,
               itemBuilder: (context, index) {
                 final ConversationThread thread = appState.threads[index];
-                
+
                 // Extract a clean initials string from the phone address for the avatar bubble
-                final String avatarLabel = thread.address.replaceAll(RegExp(r'\D'), '');
-                final String displayInitial = avatarLabel.length >= 2 
-                    ? avatarLabel.substring(avatarLabel.length - 2) 
+                final String avatarLabel = thread.address.replaceAll(
+                  RegExp(r'\D'),
+                  '',
+                );
+                final String displayInitial = avatarLabel.length >= 2
+                    ? avatarLabel.substring(avatarLabel.length - 2)
                     : '#';
 
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    child: Text(displayInitial, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                    child: Text(
+                      displayInitial,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
                   ),
                   title: Text(
                     thread.address,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   subtitle: Text(
                     thread.displaySnippet,
@@ -86,7 +102,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                           ),
                           child: Text(
                             '${thread.msgCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         )
                       : null,
@@ -95,7 +115,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChatMessagesScreen(thread: thread),
+                        builder: (context) =>
+                            ChatMessagesScreen(thread: thread),
                       ),
                     );
                   },

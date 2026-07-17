@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:glossa_messenger/main.dart';
 
 void main() {
-  testWidgets('app launches with the messenger title', (WidgetTester tester) async {
+  testWidgets('app launches with the messenger title', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const GlossaMessengerApp());
 
     expect(find.text('Glossa Messenger'), findsWidgets);

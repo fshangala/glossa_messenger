@@ -13,8 +13,9 @@ class SmsMessage {
 
   /// Factory constructor to instantiate an individual text message bubble from Kotlin
   factory SmsMessage.fromMap(Map<String, dynamic> map) {
-    final rawTimestamp = map['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch;
-    
+    final rawTimestamp =
+        map['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch;
+
     return SmsMessage(
       id: map['id']?.toString() ?? '',
       body: map['body']?.toString() ?? '',

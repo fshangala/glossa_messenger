@@ -7,7 +7,8 @@ class ChatScreenProvider with ChangeNotifier {
   final SmsChannelService _smsChannel = SmsChannelService();
   final String threadId;
   final String address;
-  final AppState globalAppState; // Reference handle to manipulate global inbox items instantly
+  final AppState
+  globalAppState; // Reference handle to manipulate global inbox items instantly
 
   List<SmsMessage> _messages = [];
   bool _isLoadingMessages = false;
@@ -31,7 +32,8 @@ class ChatScreenProvider with ChangeNotifier {
     _isLoadingMessages = true;
     notifyListeners();
 
-    final List<Map<String, dynamic>> rawMessages = await _smsChannel.getMessagesForThread(threadId);
+    final List<Map<String, dynamic>> rawMessages = await _smsChannel
+        .getMessagesForThread(threadId);
     _messages = rawMessages.map((map) => SmsMessage.fromMap(map)).toList();
 
     _isLoadingMessages = false;
@@ -43,11 +45,11 @@ class ChatScreenProvider with ChangeNotifier {
     if (textBody.trim().isEmpty) return;
 
     _isSending = true;
-    
+
     // 1. Optimistic UI Update: Create a temporary visual message bubble immediately
     final optimisticMsg = SmsMessage.createOptimistic(body: textBody);
     _messages.add(optimisticMsg);
-    
+
     // Update global app state index list instantly so the preview text updates under the hood
     globalAppState.updateThreadSnippetWithSentSms(threadId, textBody);
     notifyListeners();
@@ -62,13 +64,14 @@ class ChatScreenProvider with ChangeNotifier {
 
     if (success) {
       // Re-query the system database to overwrite our mock message with real system timestamps
-      final List<Map<String, dynamic>> rawMessages = await _smsChannel.getMessagesForThread(threadId);
+      final List<Map<String, dynamic>> rawMessages = await _smsChannel
+          .getMessagesForThread(threadId);
       _messages = rawMessages.map((map) => SmsMessage.fromMap(map)).toList();
     } else {
       // Transmission Failure: Strip the mock optimistic bubble out of the message array
       _messages.removeWhere((m) => m.id == optimisticMsg.id);
     }
-    
+
     notifyListeners();
   }
 

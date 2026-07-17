@@ -22,7 +22,8 @@ class ConversationThread {
   }
 
   /// Helper to return a stylized snippet view if empty
-  String get displaySnippet => snippet.trim().isEmpty ? "(No text content)" : snippet;
+  String get displaySnippet =>
+      snippet.trim().isEmpty ? "(No text content)" : snippet;
 
   /// Returns a clean copy of the thread with a newly updated snippet
   ConversationThread copyWith({String? newSnippet, int? newMsgCount}) {

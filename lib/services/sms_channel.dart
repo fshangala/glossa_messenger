@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 
 class SmsChannelService {
   // Define the exact channel string matched in MainActivity.kt
-  static const MethodChannel _channel = MethodChannel('com.fshangala.apps.glossa_messenger/sms');
+  static const MethodChannel _channel = MethodChannel(
+    'com.fshangala.apps.glossa_messenger/sms',
+  );
 
   /// Checks if Glossa Messenger is currently the default SMS app on the device.
   Future<bool> isDefaultSmsApp() async {
@@ -31,10 +33,14 @@ class SmsChannelService {
   /// Returns a raw list of maps containing threadId, msgCount, snippet, and address.
   Future<List<Map<String, dynamic>>> getConversations() async {
     try {
-      final List<dynamic>? result = await _channel.invokeMethod('getConversations');
+      final List<dynamic>? result = await _channel.invokeMethod(
+        'getConversations',
+      );
       if (result == null) return [];
-      
-      return result.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+
+      return result
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
     } on PlatformException catch (e) {
       debugPrint('Error fetching conversation threads: ${e.message}');
       return [];
@@ -43,7 +49,9 @@ class SmsChannelService {
 
   /// Queries all individual messages tied to a specific [threadId].
   /// Returns a raw list of maps containing id, body, timestamp, and isMe.
-  Future<List<Map<String, dynamic>>> getMessagesForThread(String threadId) async {
+  Future<List<Map<String, dynamic>>> getMessagesForThread(
+    String threadId,
+  ) async {
     try {
       final List<dynamic>? result = await _channel.invokeMethod(
         'getMessagesForThread',
@@ -51,7 +59,9 @@ class SmsChannelService {
       );
       if (result == null) return [];
 
-      return result.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+      return result
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
     } on PlatformException catch (e) {
       debugPrint('Error fetching messages for thread $threadId: ${e.message}');
       return [];
@@ -60,7 +70,10 @@ class SmsChannelService {
 
   /// Dispatches a text payload over the carrier network using the native SmsManager.
   /// Returns true if successfully passed to the cellular tower dispatch queue.
-  Future<bool> sendSms({required String address, required String message}) async {
+  Future<bool> sendSms({
+    required String address,
+    required String message,
+  }) async {
     try {
       final bool success = await _channel.invokeMethod('sendSms', {
         'address': address,
