@@ -6,8 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:glossa_messenger/main.dart';
+import 'package:glossa_messenger/app.dart';
 
 void main() {
   testWidgets('app launches with the messenger title', (
